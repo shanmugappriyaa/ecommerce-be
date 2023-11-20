@@ -154,13 +154,14 @@ const deleteProduct = async (req, res) => {
 const addToWishList = async (req, res) => {
   const { _id } = req.user;
   const { proId } = req.body;
-  console.log('Whishlist--------> ', req.user)
-  console.log('Whishlist body--------> ', req.body)
+  console.log("Whishlist--------> ", req.user);
+  console.log("Whishlist body--------> ", req.body);
   try {
     const user = await userModel.findById(_id);
     const alreadyAdded = user.wishlist.find((id) => id.toString() === proId);
+    let updatedUserDetail;
     if (alreadyAdded) {
-      let user = await userModel.findByIdAndUpdate(
+      updatedUserDetail = await userModel.findByIdAndUpdate(
         _id,
         {
           $pull: { wishlist: proId },
@@ -172,7 +173,7 @@ const addToWishList = async (req, res) => {
     }
     res.status(200).send({
       msg: "Product Added to wishList successfully",
-      user,
+      user: updatedUserDetail && updatedUserDetail,
     });
   } catch (error) {
     res.status(500).send({
@@ -242,7 +243,7 @@ const rating = async (req, res) => {
 };
 //uploadPhoto
 const uploadImages = async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   validateMongoDbId(id);
   console.log(req.files);
   try {
@@ -255,16 +256,19 @@ const uploadImages = async (req, res) => {
       urls.push(newpath);
       fs.unlinkSync(path);
     }
-    const findProduct = await Product.findByIdAndUpdate(id,
-      {  images :urls.map((file) => {
-      return file;
-    }),
-  },{new:true})
-   
+    const findProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        images: urls.map((file) => {
+          return file;
+        }),
+      },
+      { new: true }
+    );
 
     res.status(200).send({
       msg: "images uploaded Succssfully",
-      findProduct
+      findProduct,
     });
   } catch (error) {
     res.status(500).send({
