@@ -1,14 +1,14 @@
 const error = require("mongoose/lib/error");
 const userModel = require("../models/userModel");
-const Product = require("../models/productModel")
-const Cart = require("../models/cartModel")
+const Product = require("../models/productModel");
+const Cart = require("../models/cartModel");
 const { generateToken } = require("../config/jwtToken");
 const validateMongoDbId = require("../utils/validateMongodbId");
 const { generateRefreshToken } = require("../config/refershToken");
 
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const uniqid = require("uniqid")
+const uniqid = require("uniqid");
 const {
   transporter,
   mailOptions,
@@ -22,6 +22,7 @@ const createUser = async (req, res) => {
   const findUser = await userModel.findOne({ email: email });
   if (!findUser) {
     const newUser = await userModel.create(req.body);
+    console.log(req.body);
     res.status(200).send({
       message: "User  Registered Succesfully",
       newUser,
@@ -72,12 +73,11 @@ const loginAdmin = async (req, res) => {
   const { email, password } = req.body;
   // check if user exists or not
   const findAdmin = await userModel.findOne({ email });
-  if (findAdmin.role !== "admin"){
+  if (findAdmin.role !== "admin") {
     res.status(500).send({
       msg: "Not Authorized person",
-  
     });
-  } 
+  }
   if (findAdmin && (await findAdmin.isPasswordMatch(password))) {
     const refreshToken = await generateRefreshToken(findAdmin?._id);
     const updateuser = await User.findByIdAndUpdate(
@@ -108,45 +108,47 @@ const loginAdmin = async (req, res) => {
 };
 
 //add to wishlist
- const getWishlist = async(req,res)=>{
-  const {_id} = req.user
+const getWishlist = async (req, res) => {
+  const { _id } = req.user;
   try {
-    const findUser = await userModel.findById(_id).populate("wishlist")
+    const findUser = await userModel.findById(_id).populate("wishlist");
     res.status(200).send({
-      msg:"",
-      findUser
-    })
+      msg: "",
+      findUser,
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
       error: error.message,
     });
   }
- }
+};
 
 //save userAddress
-const saveAddress = async(req,res)=>{
-  const{ _id }= req.user;
-  validateMongoDbId(_id)
+const saveAddress = async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDbId(_id);
   try {
-    const updateUser = await findByIdAndUpdate(_id,
+    const updateUser = await findByIdAndUpdate(
+      _id,
       {
-      address:req?.body?.address
-    },
-    {
-      new:true
-    })
+        address: req?.body?.address,
+      },
+      {
+        new: true,
+      }
+    );
     res.status(200).send({
-      msg:"address updated Successfully",
-      updateUser
-    })
+      msg: "address updated Successfully",
+      updateUser,
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
       error: error.message,
     });
   }
-}
+};
 //handle refresh Token
 const handleRefreshToken = async (req, res) => {
   const cookie = req.cookies;
@@ -256,7 +258,7 @@ const logout = async (req, res) => {
       httpOnly: true,
       secure: true,
     });
-    res.status(204).send({msg: 'Logged out successfully'});
+    res.status(204).send({ msg: "Logged out successfully" });
   }
   await userModel.findByIdAndUpdate(refreshToken, {
     refreshToken: "",
@@ -265,7 +267,7 @@ const logout = async (req, res) => {
     httpOnly: true,
     secure: true,
   });
-  res.status(200).send({msg: 'Logged out successfully'});
+  res.status(200).send({ msg: "Logged out successfully" });
 };
 
 //forgot password
@@ -310,29 +312,24 @@ const forgotPassword = async (req, res) => {
   }
 };
 const verifyOTP = async (req, res) => {
-
-  console.log("restPage OTP--",req.body)
+  console.log("restPage OTP--", req.body);
   try {
-    let user = await userModel.findOne({_id:req.body.id})
-    if(user){
-      if(user.OTP === req.body.OTP){
-
+    let user = await userModel.findOne({ _id: req.body.id });
+    if (user) {
+      if (user.OTP === req.body.OTP) {
         res.status(200).send({
-          message:"OTP verified."
+          message: "OTP verified.",
+        });
+      } else {
+        res.status(400).send({
+          message: "Pls check your OTPand try again",
         });
       }
-        else{
-          res.status(400).send({
-            message:"Pls check your OTPand try again"
-          })
-        }     
-    }
-    else{
+    } else {
       res.status(400).send({
-        message:"user does not exist"
-      })
+        message: "user does not exist",
+      });
     }
-
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
@@ -343,7 +340,7 @@ const verifyOTP = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    let user = await userModel.findOne({ _id:req.body.id });
+    let user = await userModel.findOne({ _id: req.body.id });
     if (user) {
       req.body.password = await auth.hashPassword(req.body.password);
       user.password = req.body.password;
@@ -364,20 +361,20 @@ const resetPassword = async (req, res) => {
   }
 };
 //add to cart
-const userCart = async(req,res)=>{
-const {productId,quantity,price} = req.body;
-const {_id} = req.user;
-validateMongoDbId(_id)
+const userCart = async (req, res) => {
+  const { productId, quantity, price } = req.body;
+  const { _id } = req.user;
+  validateMongoDbId(_id);
   try {
-
     let newCart = await new Cart({
-      userId:_id,
+      userId: _id,
       productId,
-      price,quantity
-    }).save()
+      price,
+      quantity,
+    }).save();
     res.status(200).send({
       message: "",
-      newCart
+      newCart,
     });
   } catch (error) {
     res.status(500).send({
@@ -385,134 +382,138 @@ validateMongoDbId(_id)
       error: error.message,
     });
   }
-}
+};
 
-const getUserCart = async(req,res)=>{
-  const{_id} = req.user;
-  validateMongoDbId(_id)
+const getUserCart = async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDbId(_id);
   try {
-const cart = await Cart.findOne({orderby:_id}).populate("products.product")
-res.status(200).send({
-  msg:"",
-  cart
-}) } 
-catch (error) {
-    res.status(500).send({
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-}
-
-
-const emptyCart = async(req,res)=>{
-  const{_id} = req.user;
-  validateMongoDbId(_id)
-  try {
-    const user = await userModel.findOne({_id})
-    const cart = await Cart.findOneAndRemove({orderby:user._id})
+    const cart = await Cart.find({ userId: _id }).populate("productId");
     res.status(200).send({
-      msg:"",
-      cart
-    })
+      msg: "",
+      cart,
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
       error: error.message,
     });
   }
-}
+};
 
-const createOrder = async(req,res)=>{
-  const{_id} = req.user;
-  const {COD} = req.body;
-  validateMongoDbId(_id)
+const emptyCart = async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDbId(_id);
   try {
-    if(!COD){
+    const user = await userModel.findOne({ _id });
+    const cart = await Cart.findOneAndRemove({ orderby: user._id });
+    res.status(200).send({
+      msg: "",
+      cart,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const createOrder = async (req, res) => {
+  const { _id } = req.user;
+  const { COD } = req.body;
+  validateMongoDbId(_id);
+  try {
+    if (!COD) {
       res.status(400).send({
-        msg:"Create Cash oN order failed",
-      })
+        msg: "Create Cash oN order failed",
+      });
     }
     const user = await userModel.findById(_id);
-    let userCart = await Cart.findOne({orderby:user._id})
-    let finalAmount =0;
-    if(userCart.totalAfterDiscount){
-      finalAmount = userCart.totalAfterDiscount 
-    }
-    else{
-      finalAmount = userCart.cartTotal 
+    let userCart = await Cart.findOne({ orderby: user._id });
+    let finalAmount = 0;
+    if (userCart.totalAfterDiscount) {
+      finalAmount = userCart.totalAfterDiscount;
+    } else {
+      finalAmount = userCart.cartTotal;
     }
     let newOrder = await new Order({
       products: userCart.products,
-      paymentIntent:{
-        id:uniqid(),
-        method:"COD",
-        amount:finalAmount,
-        status:"Cash On Delivery",
-        created:Date.now(),
-        currency:"usd"
+      paymentIntent: {
+        id: uniqid(),
+        method: "COD",
+        amount: finalAmount,
+        status: "Cash On Delivery",
+        created: Date.now(),
+        currency: "usd",
       },
-orderby:user._id,
-orderStatus:"Cash On Delivery",
+      orderby: user._id,
+      orderStatus: "Cash On Delivery",
     }).save();
-    let update = userCart.products.map((item)=>{
+    let update = userCart.products.map((item) => {
       return {
-        updateOne:{
-          filter:{_id:item.product._id},
-          update:{$inc:{quantity:-item.count,sold:+item.count}}
+        updateOne: {
+          filter: { _id: item.product._id },
+          update: { $inc: { quantity: -item.count, sold: +item.count } },
         },
       };
-    })
-    const updated = await Product.bulkWrite(update,{})
+    });
+    const updated = await Product.bulkWrite(update, {});
     res.status(200).send({
-      message:"order Successful"
-    })
+      message: "order Successful",
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
       error: error.message,
     });
   }
-}
+};
 
-const getOrders = async(req,res)=>{
-  const{_id} = req.user;
-  validateMongoDbId(_id)
+const getOrders = async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDbId(_id);
   try {
-    const userOrders = await Orders.findOne({orderby:_id}).populate('products.product').exec()
+    const userOrders = await Orders.findOne({ orderby: _id })
+      .populate("products.product")
+      .exec();
     res.status(200).send({
-      message:"",
-      userOrders
-    })
+      message: "",
+      userOrders,
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
       error: error.message,
     });
   }
-}
+};
 
-const updateOrderStatus = async(req,res)=>{
-  const{status} = req.body;
-  const{id} = req.params;
-  validateMongoDbId(id)
+const updateOrderStatus = async (req, res) => {
+  const { status } = req.body;
+  const { id } = req.params;
+  validateMongoDbId(id);
   try {
-    const updateOrderStatus = await Order.findByIdAndUpdate(id,{
-      orderStatus:status,
-      paymentIntent:{
-        status:status
+    const updateOrderStatus = await Order.findByIdAndUpdate(
+      id,
+      {
+        orderStatus: status,
+        paymentIntent: {
+          status: status,
+        },
       },
-    },{new:true})
+      { new: true }
+    );
     res.status(200).send({
-      updateOrderStatus
-    })
+      updateOrderStatus,
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
       error: error.message,
     });
   }
-}
+};
 
 module.exports = {
   createUser,
@@ -522,7 +523,17 @@ module.exports = {
   deleteaUser,
   updateUser,
   handleRefreshToken,
-  logout,forgotPassword,resetPassword,verifyOTP,
-  loginAdmin,getWishlist,saveAddress,userCart,getUserCart,emptyCart,createOrder,
-  updateOrderStatus,getOrders
+  logout,
+  forgotPassword,
+  resetPassword,
+  verifyOTP,
+  loginAdmin,
+  getWishlist,
+  saveAddress,
+  userCart,
+  getUserCart,
+  emptyCart,
+  createOrder,
+  updateOrderStatus,
+  getOrders,
 };

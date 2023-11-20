@@ -35,7 +35,7 @@ const updateBrand = async(req,res)=>{
 //deleteBrand
 const deleteBrand = async(req,res)=>{
     const id = req.params
-    validateMongoDbId(id)
+    // validateMongoDbId(id)
     try {
         const deletedBrand = await Brand.findByIdAndDelete({_id:id})
         res.status(200).send({
@@ -51,8 +51,8 @@ const deleteBrand = async(req,res)=>{
 }
 //get a Brand
 const getBrand = async(req,res)=>{
-    const id = req.params
-    validateMongoDbId(id)
+    const {id} = req.params
+    // validateMongoDbId(id)
     try {
         const getBrand = await Brand.findById({_id:id})
         res.status(200).send({
@@ -73,7 +73,7 @@ const getAllBrand = async(req,res)=>{
     try {
         const getAllBrand = await Brand.find()
         res.status(200).send({
-            msg:"Categories are",
+            msg:"Brands are",
             getAllBrand
         })
     } catch (error) {
