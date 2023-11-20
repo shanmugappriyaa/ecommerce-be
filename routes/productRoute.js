@@ -5,7 +5,7 @@ const {isAdmin,authMiddleware} = require('../middleware/authMiddleware')
 const { uploadPhoto, productImgResize } = require('../middleware/uploadImages')
 
 router.post('/create',createProduct)
-router.put('/upload/:id',uploadPhoto.array('images',10),productImgResize,uploadImages)
+router.put('/upload/:id',uploadPhoto.array('images',10),uploadImages)
 router.delete('/delete-img/:id',authMiddleware,isAdmin,deleteImages)
 router.get('/:id',getaProduct)
 router.get('/',getAllProducts)

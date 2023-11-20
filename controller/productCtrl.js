@@ -1,5 +1,8 @@
 const Product = require("../models/productModel");
 const userModel = require("../models/userModel");
+const validateMongoDbId = require("../utils/validateMongodbId");
+const fs = require("fs");
+
 const {
   cloudinaryUploadImg,
   cloudinaryDeleteImg,
@@ -247,15 +250,21 @@ const uploadImages = async (req, res) => {
   validateMongoDbId(id);
   console.log(req.files);
   try {
-    const uploader = (path) => cloudinaryUploadImg(path, "images");
+    const uploader = (path) => cloudinaryUploadImg(path);
     const urls = [];
     const files = req.files;
-    for (const file of files) {
-      const { path } = file;
-      const newpath = await uploader(path);
-      urls.push(newpath);
-      fs.unlinkSync(path);
+    for (let i = 0; i < req.files.length; i++) {
+      let locaFilePath = req.files[i].path;
+      const newpath = await uploader(locaFilePath);
+
+      urls.push({
+        url: newpath?.secure_url,
+        asset_id: newpath?.asset_id,
+        public_id: newpath?.public_id,
+      });
+      fs.unlinkSync(locaFilePath);
     }
+
     const findProduct = await Product.findByIdAndUpdate(
       id,
       {

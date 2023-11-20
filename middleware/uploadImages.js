@@ -5,10 +5,10 @@ const fs = require("fs");
 
 const multerStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../public/images"));
+    cb(null, path.join(__dirname, "../public/images/products"));
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * le9);
+    const uniqueSuffix = Date.now() + "-" + Math.round(100000 + Math.random() * 900000);
     cb(null, file.fieldname + "-" + uniqueSuffix + ".jpeg");
   },
 });
@@ -26,7 +26,6 @@ const productImgResize = async (req, res, next) => {
   if (!req.files) return next();
   await Promise.all(
     req.files.map(async (file) => {
-      console.log(file)
       await sharp(file.path)
         .resize(300, 300)
         .toFormat("jp2")
@@ -40,9 +39,9 @@ const productImgResize = async (req, res, next) => {
 };
 
 const uploadPhoto = multer({
-  Storage: multerStorage,
+  storage: multerStorage,
   fileFilter: multerFilter,
-  limits: { fieldSize: 1000000 },
+  limits: { fieldSize: 1024*1024*10 },
 });
 
 module.exports = { uploadPhoto, productImgResize };
