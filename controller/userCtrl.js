@@ -386,7 +386,7 @@ const userCart = async (req, res) => {
 
 const getUserCart = async (req, res) => {
   const { _id } = req.user;
-  validateMongoDbId(_id);
+    validateMongoDbId(_id);
   try {
     const cart = await Cart.find({ userId: _id }).populate("productId");
     res.status(200).send({
@@ -418,6 +418,24 @@ const emptyCart = async (req, res) => {
     });
   }
 };
+
+const removeProductFromCart = async(req,res)=>{
+  const { _id } = req.user;
+  const {cartItemId} =req.params;
+  validateMongoDbId(_id)
+  try {
+    const deleteProduct = await Cart.deleteOne({userId:_id,_id:cartItemId})
+    res.status(200).send({
+      msg: "item delted successfully",
+      deleteProduct,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+}
 
 const createOrder = async (req, res) => {
   const { _id } = req.user;
@@ -536,4 +554,6 @@ module.exports = {
   createOrder,
   updateOrderStatus,
   getOrders,
+removeProductFromCart
+
 };

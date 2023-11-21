@@ -157,13 +157,25 @@ const deleteProduct = async (req, res) => {
 const addToWishList = async (req, res) => {
   const { _id } = req.user;
   const { proId } = req.body;
-  console.log("Whishlist--------> ", req.user);
   console.log("Whishlist body--------> ", req.body);
   try {
     const user = await userModel.findById(_id);
     const alreadyAdded = user.wishlist.find((id) => id.toString() === proId);
     let updatedUserDetail;
-    if (alreadyAdded) {
+
+    if (!alreadyAdded) {
+      updatedUserDetail = await userModel.findByIdAndUpdate(
+        _id,
+        {
+          $push: { wishlist: proId },
+        },
+        {
+          new: true,
+        }
+      );
+    } else {
+      const alreadyAdded = user.wishlist.find((id) => id.toString() != proId);
+    
       updatedUserDetail = await userModel.findByIdAndUpdate(
         _id,
         {
@@ -174,6 +186,8 @@ const addToWishList = async (req, res) => {
         }
       );
     }
+
+    console.log("alreadyAdded--------> ", updatedUserDetail);
     res.status(200).send({
       msg: "Product Added to wishList successfully",
       user: updatedUserDetail && updatedUserDetail,
