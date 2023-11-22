@@ -37,6 +37,11 @@ const userSchema = new mongoose.Schema({
         type:Array,
         default:[]
     },
+        
+    orderdetails:{
+        type:Array,
+        default:[]
+    },
     address:{type:String},
     wishlist:[{type:mongoose.Schema.ObjectId,ref:"Product"}],
     passwordChangedAt: Date,

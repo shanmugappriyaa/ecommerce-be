@@ -2,10 +2,10 @@ const nodeMailer = require("nodemailer");
 const crypto = require("crypto");
 const { error } = require("console");
 
-const randomStringGenerate = () => {
-  // return crypto.randomBytes(len).toString("hex");
- return  Math.random().toString(36).substr(2, 6)
-};
+// const randomStringGenerate = () => {
+//   // return crypto.randomBytes(len).toString("hex");
+//  return  Math.random().toString(36).substr(2, 6)
+// };
 
 const transporter = nodeMailer.createTransport({
   service: "Gmail",
@@ -23,4 +23,4 @@ const mailOptions = {
   html: "",
 };
 
-module.exports = { transporter, mailOptions , randomStringGenerate};
+module.exports = { transporter, mailOptions };

@@ -275,16 +275,16 @@ const forgotPassword = async (req, res) => {
   try {
     let user = await userModel.findOne({ email: req.body.email });
     if (user) {
-      const randomString = randomStringGenerate();
-      const path = process.env.FRONT_END_URL + "/otp/" + user._id;
+    
+      const path = process.env.FRONT_END_URL  + user._id;
       mailOptions.to = user.email;
-      mailOptions.html = `Hi ${user.userName} Please find the OTP ${randomString} in the following link to reset your password
+      mailOptions.html = `Hi ${user.userName} Please find the OTP  in the following link to reset your password
       <a href=${path}> Reset password link`;
-      const updatedUser = await userModel.updateOne(
-        { email: req.body.email },
-        { $set: { OTP: randomString } },
-        { new: true }
-      );
+      // const updatedUser = await userModel.updateOne(
+      //   { email: req.body.email },
+      //   { $set: { OTP: randomString } },
+      //   { new: true }
+      // );
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.error("Error sending email: " + error);
@@ -311,32 +311,32 @@ const forgotPassword = async (req, res) => {
     });
   }
 };
-const verifyOTP = async (req, res) => {
-  console.log("restPage OTP--", req.body);
-  try {
-    let user = await userModel.findOne({ _id: req.body.id });
-    if (user) {
-      if (user.OTP === req.body.OTP) {
-        res.status(200).send({
-          message: "OTP verified.",
-        });
-      } else {
-        res.status(400).send({
-          message: "Pls check your OTPand try again",
-        });
-      }
-    } else {
-      res.status(400).send({
-        message: "user does not exist",
-      });
-    }
-  } catch (error) {
-    res.status(500).send({
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-};
+// const verifyOTP = async (req, res) => {
+//   console.log("restPage OTP--", req.body);
+//   try {
+//     let user = await userModel.findOne({ _id: req.body.id });
+//     if (user) {
+//       if (user.OTP === req.body.OTP) {
+//         res.status(200).send({
+//           message: "OTP verified.",
+//         });
+//       } else {
+//         res.status(400).send({
+//           message: "Pls check your OTPand try again",
+//         });
+//       }
+//     } else {
+//       res.status(400).send({
+//         message: "user does not exist",
+//       });
+//     }
+//   } catch (error) {
+//     res.status(500).send({
+//       message: "Internal Server Error",
+//       error: error.message,
+//     });
+//   }
+// };
 
 const resetPassword = async (req, res) => {
   try {
@@ -544,7 +544,6 @@ module.exports = {
   logout,
   forgotPassword,
   resetPassword,
-  verifyOTP,
   loginAdmin,
   getWishlist,
   saveAddress,

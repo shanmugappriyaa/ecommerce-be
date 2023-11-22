@@ -43,7 +43,7 @@ router.put("/edit-user", authMiddleware, updateUser);
 
 router.post("/forgotPassword", forgotPassword);
 router.put("/resetPassword", resetPassword);
-router.post("/otp", verifyOTP);
+// router.post("/otp", verifyOTP);
 
 router.put(
   "/order/update-order/:id",
