@@ -36,7 +36,6 @@ router.get("/get-orders", authMiddleware, getOrders);
 router.get("/logout", logout);
 router.get("/wishlist", authMiddleware, getWishlist);
 router.post("/cart", authMiddleware, userCart);
-router.delete("/:id", deleteaUser);
 router.put("/edit-user", authMiddleware, updateUser);
 
 
@@ -55,7 +54,8 @@ router.put(
 router.put("/save-address", authMiddleware, saveAddress);
 router.delete("/empty-cart", authMiddleware, emptyCart);
 router.delete("/delete-product-cart/:cartItemId", authMiddleware,removeProductFromCart);
-router.post("/cart/cash-order", authMiddleware, createOrder);
+router.post("/cart/create-order", authMiddleware, createOrder);
+router.delete("/:id", deleteaUser);
 router.get("/:id", authMiddleware, isAdmin, getaUser);
 
 module.exports = router;

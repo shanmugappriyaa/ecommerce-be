@@ -157,7 +157,6 @@ const deleteProduct = async (req, res) => {
 const addToWishList = async (req, res) => {
   const { _id } = req.user;
   const { proId } = req.body;
-  console.log("Whishlist body--------> ", req.body);
   try {
     const user = await userModel.findById(_id);
     const alreadyAdded = user.wishlist.find((id) => id.toString() === proId);

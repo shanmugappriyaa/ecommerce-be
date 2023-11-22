@@ -1,6 +1,7 @@
 const error = require("mongoose/lib/error");
 const userModel = require("../models/userModel");
 const Product = require("../models/productModel");
+const Order = require("../models/orderModel");
 const Cart = require("../models/cartModel");
 const { generateToken } = require("../config/jwtToken");
 const validateMongoDbId = require("../utils/validateMongodbId");
@@ -15,6 +16,7 @@ const {
   randomStringGenerate,
 } = require("../common/nodeMail");
 const dotenv = require("dotenv");
+const orderModel = require("../models/orderModel");
 dotenv.config();
 
 const createUser = async (req, res) => {
@@ -275,10 +277,9 @@ const forgotPassword = async (req, res) => {
   try {
     let user = await userModel.findOne({ email: req.body.email });
     if (user) {
-    
-      const path = process.env.FRONT_END_URL  + user._id;
+      const path = process.env.FRONT_END_URL + "/reset-password/"+user._id;
       mailOptions.to = user.email;
-      mailOptions.html = `Hi ${user.userName} Please find the OTP  in the following link to reset your password
+      mailOptions.html = `Hi ${user.firstname} Please find the OTP  in the following link to reset your password
       <a href=${path}> Reset password link`;
       // const updatedUser = await userModel.updateOne(
       //   { email: req.body.email },
@@ -386,7 +387,7 @@ const userCart = async (req, res) => {
 
 const getUserCart = async (req, res) => {
   const { _id } = req.user;
-    validateMongoDbId(_id);
+  validateMongoDbId(_id);
   try {
     const cart = await Cart.find({ userId: _id }).populate("productId");
     res.status(200).send({
@@ -406,7 +407,8 @@ const emptyCart = async (req, res) => {
   validateMongoDbId(_id);
   try {
     const user = await userModel.findOne({ _id });
-    const cart = await Cart.findOneAndRemove({ orderby: user._id });
+
+    const cart = await Cart.deleteMany({});
     res.status(200).send({
       msg: "",
       cart,
@@ -419,12 +421,15 @@ const emptyCart = async (req, res) => {
   }
 };
 
-const removeProductFromCart = async(req,res)=>{
+const removeProductFromCart = async (req, res) => {
   const { _id } = req.user;
-  const {cartItemId} =req.params;
-  validateMongoDbId(_id)
+  const { cartItemId } = req.params;
+  validateMongoDbId(_id);
   try {
-    const deleteProduct = await Cart.deleteOne({userId:_id,_id:cartItemId})
+    const deleteProduct = await Cart.deleteOne({
+      userId: _id,
+      _id: cartItemId,
+    });
     res.status(200).send({
       msg: "item delted successfully",
       deleteProduct,
@@ -435,50 +440,22 @@ const removeProductFromCart = async(req,res)=>{
       error: error.message,
     });
   }
-}
+};
 
 const createOrder = async (req, res) => {
+  const { shippingInfo, orderitems, totalPrice } = req.body;
   const { _id } = req.user;
-  const { COD } = req.body;
-  validateMongoDbId(_id);
+
   try {
-    if (!COD) {
-      res.status(400).send({
-        msg: "Create Cash oN order failed",
-      });
-    }
-    const user = await userModel.findById(_id);
-    let userCart = await Cart.findOne({ orderby: user._id });
-    let finalAmount = 0;
-    if (userCart.totalAfterDiscount) {
-      finalAmount = userCart.totalAfterDiscount;
-    } else {
-      finalAmount = userCart.cartTotal;
-    }
-    let newOrder = await new Order({
-      products: userCart.products,
-      paymentIntent: {
-        id: uniqid(),
-        method: "COD",
-        amount: finalAmount,
-        status: "Cash On Delivery",
-        created: Date.now(),
-        currency: "usd",
-      },
-      orderby: user._id,
-      orderStatus: "Cash On Delivery",
-    }).save();
-    let update = userCart.products.map((item) => {
-      return {
-        updateOne: {
-          filter: { _id: item.product._id },
-          update: { $inc: { quantity: -item.count, sold: +item.count } },
-        },
-      };
+    const order = await Order.create({
+      shippingInfo,
+      orderitems,
+      totalPrice,
+      user: _id,
     });
-    const updated = await Product.bulkWrite(update, {});
     res.status(200).send({
-      message: "order Successful",
+      message: "order craeted Successful",
+      order,
     });
   } catch (error) {
     res.status(500).send({
@@ -553,6 +530,5 @@ module.exports = {
   createOrder,
   updateOrderStatus,
   getOrders,
-removeProductFromCart
-
+  removeProductFromCart,
 };
