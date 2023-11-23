@@ -276,6 +276,7 @@ const logout = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     let user = await userModel.findOne({ email: req.body.email });
+    console.log(user)
     if (user) {
       const path = process.env.FRONT_END_URL + "/reset-password/"+user._id;
       mailOptions.to = user.email;
@@ -338,7 +339,7 @@ const resetPassword = async (req, res) => {
   try {
     let user = await userModel.findOne({ _id: req.body.id });
     if (user) {
-      req.body.password = await auth.hashPassword(req.body.password);
+      // req.body.password = await auth.hashPassword(req.body.password);
       user.password = req.body.password;
       await user.save();
       res.status(200).send({
