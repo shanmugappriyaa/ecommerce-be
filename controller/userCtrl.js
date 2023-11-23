@@ -281,11 +281,6 @@ const forgotPassword = async (req, res) => {
       mailOptions.to = user.email;
       mailOptions.html = `Hi ${user.firstname} Please find the OTP  in the following link to reset your password
       <a href=${path}> Reset password link`;
-      // const updatedUser = await userModel.updateOne(
-      //   { email: req.body.email },
-      //   { $set: { OTP: randomString } },
-      //   { new: true }
-      // );
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.error("Error sending email: " + error);
@@ -443,13 +438,13 @@ const removeProductFromCart = async (req, res) => {
 };
 
 const createOrder = async (req, res) => {
-  const { shippingInfo, orderitems, totalPrice } = req.body;
+  const { shippingInfo, orderItems, totalPrice } = req.body;
   const { _id } = req.user;
-
+  validateMongoDbId(_id);
   try {
     const order = await Order.create({
       shippingInfo,
-      orderitems,
+      orderItems,
       totalPrice,
       user: _id,
     });
@@ -469,8 +464,8 @@ const getOrders = async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
-    const userOrders = await Orders.findOne({ orderby: _id })
-      .populate("products.product")
+    const userOrders = await Order.find({ user: _id })
+      .populate("orderItems")
       .exec();
     res.status(200).send({
       message: "",
