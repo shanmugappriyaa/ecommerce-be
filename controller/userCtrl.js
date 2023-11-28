@@ -227,7 +227,7 @@ const updateUser = async (req, res) => {
   validateMongoDbId(_id);
   try {
     const updateuser = await userModel.findByIdAndUpdate(
-      _id,
+      { _id },
       {
         firstname: req.body?.firstname,
         lastname: req.body?.lastname,
@@ -238,10 +238,8 @@ const updateUser = async (req, res) => {
         new: true,
       }
     );
-    res.status(200).send({
-      message: "User Data Updated Succesffully",
-      updateuser,
-    });
+    console.log("updated user", updateuser);
+    res.status(200).send(updateuser);
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
@@ -276,9 +274,9 @@ const logout = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     let user = await userModel.findOne({ email: req.body.email });
-    console.log(user)
+    console.log(user);
     if (user) {
-      const path = process.env.FRONT_END_URL + "/reset-password/"+user._id;
+      const path = process.env.FRONT_END_URL + "/reset-password/" + user._id;
       mailOptions.to = user.email;
       mailOptions.html = `Hi ${user.firstname} Please find the OTP  in the following link to reset your password
       <a href=${path}> Reset password link`;
@@ -308,38 +306,11 @@ const forgotPassword = async (req, res) => {
     });
   }
 };
-// const verifyOTP = async (req, res) => {
-//   console.log("restPage OTP--", req.body);
-//   try {
-//     let user = await userModel.findOne({ _id: req.body.id });
-//     if (user) {
-//       if (user.OTP === req.body.OTP) {
-//         res.status(200).send({
-//           message: "OTP verified.",
-//         });
-//       } else {
-//         res.status(400).send({
-//           message: "Pls check your OTPand try again",
-//         });
-//       }
-//     } else {
-//       res.status(400).send({
-//         message: "user does not exist",
-//       });
-//     }
-//   } catch (error) {
-//     res.status(500).send({
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   }
-// };
 
 const resetPassword = async (req, res) => {
   try {
     let user = await userModel.findOne({ _id: req.body.id });
     if (user) {
-      // req.body.password = await auth.hashPassword(req.body.password);
       user.password = req.body.password;
       await user.save();
       res.status(200).send({
@@ -362,6 +333,7 @@ const userCart = async (req, res) => {
   const { productId, quantity, price } = req.body;
   const { _id } = req.user;
   validateMongoDbId(_id);
+  console.log("usecart--------------------> ", req.body, req.user);
   try {
     let newCart = await new Cart({
       userId: _id,
@@ -439,19 +411,21 @@ const removeProductFromCart = async (req, res) => {
 };
 
 const createOrder = async (req, res) => {
-  const { shippingInfo, orderItems, totalPrice } = req.body;
+  const { shippingInfo, orderItems, totalPrice, paymentInfo } = req.body;
   const { _id } = req.user;
+  console.log("orderitems",req.body.orderItems)
   validateMongoDbId(_id);
   try {
     const order = await Order.create({
       shippingInfo,
       orderItems,
       totalPrice,
+      paymentInfo,
       user: _id,
     });
+console.log("order.....>",order)
     res.status(200).send({
-      message: "order craeted Successful",
-      order,
+      order
     });
   } catch (error) {
     res.status(500).send({
@@ -461,16 +435,16 @@ const createOrder = async (req, res) => {
   }
 };
 
-const getOrders = async (req, res) => {
+const getMyOrders = async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
-    const userOrders = await Order.find({ user: _id })
+    const Orders = await Order.find({ user: _id })
+      // .populate("user")
       .populate("orderItems")
-      .exec();
+    .exec();
     res.status(200).send({
-      message: "",
-      userOrders,
+      Orders,
     });
   } catch (error) {
     res.status(500).send({
@@ -525,6 +499,6 @@ module.exports = {
   emptyCart,
   createOrder,
   updateOrderStatus,
-  getOrders,
+  getMyOrders,
   removeProductFromCart,
 };

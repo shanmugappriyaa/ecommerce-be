@@ -11,20 +11,44 @@ var orderSchema = new mongoose.Schema(
     shippingInfo: {
       firstname: {
         type: String,
-        required: true,
+        
       },
       lastname: {
         type: String,
-        required: true,
+        
+      },
+      email: {
+        type: String,
+        
       },
       address: {
         type: String,
-        required: true,
+      
       },
       pincode: {
-        type: Number,
-        required: true,
+        type: String,
+      
       },
+      phone: {
+        type: String,
+        
+      },
+    },
+    paymentInfo:{
+      razorpayOrderId:{
+        type:String,
+      },
+      razorpaymentId:{
+        type:String
+      },
+    },
+    paidAt:{
+      type:Date,
+      default:Date.now()
+    },
+    orderStatus:{
+      type:String,
+      default:"Ordered"
     },
 
     orderItems: [
